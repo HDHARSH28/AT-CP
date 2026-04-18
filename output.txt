@@ -1,279 +1,204 @@
-============================================================
-  Conditional & Branching Mini Compiler
-  Models: DFA (Lexer) | CFG + PDA (Parser) | TAC (CodeGen)
-============================================================
+--- SIMPLE COMPILER ---
+Source Code: if (x >= 5) {
+    x = 1;
+} else if(x>10) {
+    x = 0;
+}else{
+    x=10;
+}
 
-  Source code (from input.txt):
-  --------------------------------------------
-    1 | int x=10;
-    2 | if (x > 5) {
-    3 |     x = 1;
-    4 | } else if(x>10) {
-    5 |     x = 0;
-    6 | }else{
-    7 |     x=100;
-    8 | }
 
-  --------------------------------------------
+  [DFA Trace]: 
+    State 0 --reads 'i'--> State 1
+    State 1 --reads 'f'--> State 1
+    => Final State! Accepted Token: [if]
 
-============================================================
-  PHASE 1 -- LEXICAL ANALYSIS (DFA)
-============================================================
+  [DFA Trace]: 
+    State 0 --reads '('--> State 5
+    => Final State! Accepted Token: [(]
 
-  Tokens recognized:
-  LEXEME         TOKEN TYPE       LINE   COL
-  ------------------------------------------
-  int            KEYWORD_INT      1      1
-  x              IDENTIFIER       1      5
-  =              ASSIGN_OP        1      6
-  10             NUMBER           1      7
-  ;              SEMICOLON        1      9
-  if             KEYWORD_IF       2      1
-  (              LPAREN           2      4
-  x              IDENTIFIER       2      5
-  >              REL_OP           2      7
-  5              NUMBER           2      9
-  )              RPAREN           2      10
-  {              LBRACE           2      12
-  x              IDENTIFIER       3      5
-  =              ASSIGN_OP        3      7
-  1              NUMBER           3      9
-  ;              SEMICOLON        3      10
-  }              RBRACE           4      1
-  else           KEYWORD_ELSE     4      3
-  if             KEYWORD_IF       4      8
-  (              LPAREN           4      10
-  x              IDENTIFIER       4      11
-  >              REL_OP           4      12
-  10             NUMBER           4      13
-  )              RPAREN           4      15
-  {              LBRACE           4      17
-  x              IDENTIFIER       5      5
-  =              ASSIGN_OP        5      7
-  0              NUMBER           5      9
-  ;              SEMICOLON        5      10
-  }              RBRACE           6      1
-  else           KEYWORD_ELSE     6      2
-  {              LBRACE           6      6
-  x              IDENTIFIER       7      5
-  =              ASSIGN_OP        7      6
-  100            NUMBER           7      7
-  ;              SEMICOLON        7      10
-  }              RBRACE           8      1
+  [DFA Trace]: 
+    State 0 --reads 'x'--> State 1
+    => Final State! Accepted Token: [x]
 
-  DFA State Transitions:
-     S0(start) --'i'--> S1(word)
-     S1(word) --' '--> ACCEPT
-     S0(start) --'x'--> S1(word)
-     S1(word) --' '--> ACCEPT
-     S0(start) --'='--> S4(eq)
-     S4(eq) --' '--> ACCEPT
-     S0(start) --'1'--> S2(digit)
-     S2(digit) --' '--> ACCEPT
-     S0(start) --';'--> ACCEPT
-     S0(start) --'i'--> S1(word)
-     S1(word) --' '--> ACCEPT
-     S0(start) --'('--> ACCEPT
-     S0(start) --'x'--> S1(word)
-     S1(word) --' '--> ACCEPT
-     S0(start) --'>'--> S3(angle)
-     S3(angle) --' '--> ACCEPT
-     S0(start) --'5'--> S2(digit)
-     S2(digit) --' '--> ACCEPT
-     S0(start) --')'--> ACCEPT
-     S0(start) --'{'--> ACCEPT
-     S0(start) --'x'--> S1(word)
-     S1(word) --' '--> ACCEPT
-     S0(start) --'='--> S4(eq)
-     S4(eq) --' '--> ACCEPT
-     S0(start) --'1'--> S2(digit)
-     S2(digit) --' '--> ACCEPT
-     S0(start) --';'--> ACCEPT
-     S0(start) --'}'--> ACCEPT
-     S0(start) --'e'--> S1(word)
-     S1(word) --' '--> ACCEPT
-     S0(start) --'i'--> S1(word)
-     S1(word) --' '--> ACCEPT
-     S0(start) --'('--> ACCEPT
-     S0(start) --'x'--> S1(word)
-     S1(word) --' '--> ACCEPT
-     S0(start) --'>'--> S3(angle)
-     S3(angle) --' '--> ACCEPT
-     S0(start) --'1'--> S2(digit)
-     S2(digit) --' '--> ACCEPT
-     S0(start) --')'--> ACCEPT
-     S0(start) --'{'--> ACCEPT
-     S0(start) --'x'--> S1(word)
-     S1(word) --' '--> ACCEPT
-     S0(start) --'='--> S4(eq)
-     S4(eq) --' '--> ACCEPT
-     S0(start) --'0'--> S2(digit)
-     S2(digit) --' '--> ACCEPT
-     S0(start) --';'--> ACCEPT
-     S0(start) --'}'--> ACCEPT
-     S0(start) --'e'--> S1(word)
-     S1(word) --' '--> ACCEPT
-     S0(start) --'{'--> ACCEPT
-     S0(start) --'x'--> S1(word)
-     S1(word) --' '--> ACCEPT
-     S0(start) --'='--> S4(eq)
-     S4(eq) --' '--> ACCEPT
-     S0(start) --'1'--> S2(digit)
-     S2(digit) --' '--> ACCEPT
-     S0(start) --';'--> ACCEPT
-     S0(start) --'}'--> ACCEPT
+  [DFA Trace]: 
+    State 0 --reads '>'--> State 3
+    State 3 --reads '='--> State 4
+    => Final State! Accepted Token: [>=]
 
-============================================================
-  PHASE 2 -- SYNTAX ANALYSIS (PDA)
-============================================================
+  [DFA Trace]: 
+    State 0 --reads '5'--> State 2
+    => Final State! Accepted Token: [5]
 
-  PDA Stack Operations:
---- PDA Simulation Start ---
-     Initial stack: [ $ ]
-     PUSH '$'  |  Stack top -> $
-     PUSH 'program'  |  Stack top -> program
-     PUSH 'stmt'  |  Stack top -> stmt
-     POP  'stmt'  |  Stack top -> program
-     PUSH 'stmt'  |  Stack top -> stmt
-     PUSH 'if_stmt'  |  Stack top -> if_stmt
-     MATCH 'if'
-     PUSH '('  |  Stack top -> (
-     MATCH '('
-     PUSH 'condition'  |  Stack top -> condition
-     POP  'condition'  |  Stack top -> (
-     POP  '('  |  Stack top -> if_stmt
-     MATCH ')' -- balanced parentheses
-     PUSH 'stmt'  |  Stack top -> stmt
-     PUSH 'block'  |  Stack top -> block
-     PUSH '{'  |  Stack top -> {
-     MATCH '{'
-     PUSH 'stmt'  |  Stack top -> stmt
-     POP  'stmt'  |  Stack top -> {
-     POP  '{'  |  Stack top -> block
-     MATCH '}' -- balanced braces
-     POP  'block'  |  Stack top -> stmt
-     POP  'stmt'  |  Stack top -> if_stmt
-     MATCH 'else'
-     PUSH 'stmt'  |  Stack top -> stmt
-     PUSH 'if_stmt'  |  Stack top -> if_stmt
-     MATCH 'if'
-     PUSH '('  |  Stack top -> (
-     MATCH '('
-     PUSH 'condition'  |  Stack top -> condition
-     POP  'condition'  |  Stack top -> (
-     POP  '('  |  Stack top -> if_stmt
-     MATCH ')' -- balanced parentheses
-     PUSH 'stmt'  |  Stack top -> stmt
-     PUSH 'block'  |  Stack top -> block
-     PUSH '{'  |  Stack top -> {
-     MATCH '{'
-     PUSH 'stmt'  |  Stack top -> stmt
-     POP  'stmt'  |  Stack top -> {
-     POP  '{'  |  Stack top -> block
-     MATCH '}' -- balanced braces
-     POP  'block'  |  Stack top -> stmt
-     POP  'stmt'  |  Stack top -> if_stmt
-     MATCH 'else'
-     PUSH 'stmt'  |  Stack top -> stmt
-     PUSH 'block'  |  Stack top -> block
-     PUSH '{'  |  Stack top -> {
-     MATCH '{'
-     PUSH 'stmt'  |  Stack top -> stmt
-     POP  'stmt'  |  Stack top -> {
-     POP  '{'  |  Stack top -> block
-     MATCH '}' -- balanced braces
-     POP  'block'  |  Stack top -> stmt
-     POP  'stmt'  |  Stack top -> if_stmt
-     POP  'if_stmt'  |  Stack top -> stmt
-     POP  'stmt'  |  Stack top -> if_stmt
-     POP  'if_stmt'  |  Stack top -> stmt
-     POP  'stmt'  |  Stack top -> program
-     POP  'program'  |  Stack top -> $
-     POP  '$'  |  Stack EMPTY
-     Stack is empty -> INPUT ACCEPTED
---- PDA Simulation End ---
+  [DFA Trace]: 
+    State 0 --reads ')'--> State 5
+    => Final State! Accepted Token: [)]
 
-  Context-Free Grammar (CFG) used:
-    program    -> stmt_list
-    stmt_list  -> stmt stmt_list | epsilon
-    stmt       -> if_stmt | block | assign_stmt | decl_stmt
-    if_stmt    -> 'if' '(' condition ')' stmt
-                | 'if' '(' condition ')' stmt 'else' stmt
-    condition  -> id relop expr
-                | condition '&&' condition
-                | condition '||' condition
-    block      -> '{' stmt_list '}'
-    assign_stmt-> id '=' expr ';'
-    decl_stmt  -> 'int' id ';'  |  'int' id '=' expr ';'
-    expr       -> id | number | id '+' id | id '-' id
+  [DFA Trace]: 
+    State 0 --reads '{'--> State 5
+    => Final State! Accepted Token: [{]
 
-  Derivation Steps (Leftmost):
-    1. stmt -> decl_stmt
-    2. decl_stmt -> int id = expr ;
-    3. stmt -> if_stmt
-    4. condition -> id > expr
-    5. stmt -> block
-    6. stmt -> assign_stmt
-    7. assign_stmt -> id = expr ;
-    8. block -> { stmt_list }
-    9. if_stmt -> if ( cond ) stmt else stmt
-    10. stmt -> if_stmt
-    11. condition -> id > expr
-    12. stmt -> block
-    13. stmt -> assign_stmt
-    14. assign_stmt -> id = expr ;
-    15. block -> { stmt_list }
-    16. if_stmt -> if ( cond ) stmt else stmt
-    17. stmt -> block
-    18. stmt -> assign_stmt
-    19. assign_stmt -> id = expr ;
-    20. block -> { stmt_list }
+  [DFA Trace]: 
+    State 0 --reads 'x'--> State 1
+    => Final State! Accepted Token: [x]
 
-  Syntax Validation: VALID
+  [DFA Trace]: 
+    State 0 --reads '='--> State 3
+    => Final State! Accepted Token: [=]
 
-  Abstract Syntax Tree (AST):
-      [PROGRAM]
-         [DECL] int x = 10
-         [IF]
-            condition: x > 5
-            THEN:
-               [BLOCK]
-                  [ASSIGN] x = 1
-            ELSE:
-               [IF]
-                  condition: x > 10
-                  THEN:
-                     [BLOCK]
-                        [ASSIGN] x = 0
-                  ELSE:
-                     [BLOCK]
-                        [ASSIGN] x = 100
+  [DFA Trace]: 
+    State 0 --reads '1'--> State 2
+    => Final State! Accepted Token: [1]
 
-============================================================
-  PHASE 3 -- INTERMEDIATE CODE GENERATION
-============================================================
+  [DFA Trace]: 
+    State 0 --reads ';'--> State 5
+    => Final State! Accepted Token: [;]
 
-  Three-Address Code (TAC):
+  [DFA Trace]: 
+    State 0 --reads '}'--> State 5
+    => Final State! Accepted Token: [}]
 
-      x = 10
-      t0 = x > 5
-      if t0 goto L0
-      goto L1
-  L0:
-      x = 1
-      goto L2
-  L1:
-      t1 = x > 10
-      if t1 goto L3
-      goto L4
-  L3:
-      x = 0
-      goto L5
-  L4:
-      x = 100
-  L5:
-  L2:
+  [DFA Trace]: 
+    State 0 --reads 'e'--> State 1
+    State 1 --reads 'l'--> State 1
+    State 1 --reads 's'--> State 1
+    State 1 --reads 'e'--> State 1
+    => Final State! Accepted Token: [else]
 
-============================================================
-  Compilation complete.
-============================================================
+  [DFA Trace]: 
+    State 0 --reads 'i'--> State 1
+    State 1 --reads 'f'--> State 1
+    => Final State! Accepted Token: [if]
+
+  [DFA Trace]: 
+    State 0 --reads '('--> State 5
+    => Final State! Accepted Token: [(]
+
+  [DFA Trace]: 
+    State 0 --reads 'x'--> State 1
+    => Final State! Accepted Token: [x]
+
+  [DFA Trace]: 
+    State 0 --reads '>'--> State 3
+    => Final State! Accepted Token: [>]
+
+  [DFA Trace]: 
+    State 0 --reads '1'--> State 2
+    State 2 --reads '0'--> State 2
+    => Final State! Accepted Token: [10]
+
+  [DFA Trace]: 
+    State 0 --reads ')'--> State 5
+    => Final State! Accepted Token: [)]
+
+  [DFA Trace]: 
+    State 0 --reads '{'--> State 5
+    => Final State! Accepted Token: [{]
+
+  [DFA Trace]: 
+    State 0 --reads 'x'--> State 1
+    => Final State! Accepted Token: [x]
+
+  [DFA Trace]: 
+    State 0 --reads '='--> State 3
+    => Final State! Accepted Token: [=]
+
+  [DFA Trace]: 
+    State 0 --reads '0'--> State 2
+    => Final State! Accepted Token: [0]
+
+  [DFA Trace]: 
+    State 0 --reads ';'--> State 5
+    => Final State! Accepted Token: [;]
+
+  [DFA Trace]: 
+    State 0 --reads '}'--> State 5
+    => Final State! Accepted Token: [}]
+
+  [DFA Trace]: 
+    State 0 --reads 'e'--> State 1
+    State 1 --reads 'l'--> State 1
+    State 1 --reads 's'--> State 1
+    State 1 --reads 'e'--> State 1
+    => Final State! Accepted Token: [else]
+
+  [DFA Trace]: 
+    State 0 --reads '{'--> State 5
+    => Final State! Accepted Token: [{]
+
+  [DFA Trace]: 
+    State 0 --reads 'x'--> State 1
+    => Final State! Accepted Token: [x]
+
+  [DFA Trace]: 
+    State 0 --reads '='--> State 3
+    => Final State! Accepted Token: [=]
+
+  [DFA Trace]: 
+    State 0 --reads '1'--> State 2
+    State 2 --reads '0'--> State 2
+    => Final State! Accepted Token: [10]
+
+  [DFA Trace]: 
+    State 0 --reads ';'--> State 5
+    => Final State! Accepted Token: [;]
+
+  [DFA Trace]: 
+    State 0 --reads '}'--> State 5
+    => Final State! Accepted Token: [}]
+
+1. LEXER Result (Tokens List):
+[KEYWORD : 'if'] [SYMBOL : '('] [ID : 'x'] [OPERATOR : '>='] [NUMBER : '5'] [SYMBOL : ')'] [SYMBOL : '{'] [ID : 'x'] [OPERATOR : '='] [NUMBER : '1'] [SYMBOL : ';'] [SYMBOL : '}'] [KEYWORD : 'else'] [KEYWORD : 'if'] [SYMBOL : '('] [ID : 'x'] [OPERATOR : '>'] [NUMBER : '10'] [SYMBOL : ')'] [SYMBOL : '{'] [ID : 'x'] [OPERATOR : '='] [NUMBER : '0'] [SYMBOL : ';'] [SYMBOL : '}'] [KEYWORD : 'else'] [SYMBOL : '{'] [ID : 'x'] [OPERATOR : '='] [NUMBER : '10'] [SYMBOL : ';'] [SYMBOL : '}'] 
+
+2. PARSER Result (PDA tracing):
+  [PDA] Read: 'if' (Stack unchanged)
+  [PDA] PUSH: '(' onto stack
+  [PDA] Read: 'x' (Stack unchanged)
+  [PDA] Read: '>=' (Stack unchanged)
+  [PDA] Read: '5' (Stack unchanged)
+  [PDA] POP : '(' off stack (Matched with ')')
+  [PDA] PUSH: '{' onto stack
+  [PDA] Read: 'x' (Stack unchanged)
+  [PDA] Read: '=' (Stack unchanged)
+  [PDA] Read: '1' (Stack unchanged)
+  [PDA] Read: ';' (Stack unchanged)
+  [PDA] POP : '{' off stack (Matched with '}')
+  [PDA] Read: 'else' (Stack unchanged)
+  [PDA] Read: 'if' (Stack unchanged)
+  [PDA] PUSH: '(' onto stack
+  [PDA] Read: 'x' (Stack unchanged)
+  [PDA] Read: '>' (Stack unchanged)
+  [PDA] Read: '10' (Stack unchanged)
+  [PDA] POP : '(' off stack (Matched with ')')
+  [PDA] PUSH: '{' onto stack
+  [PDA] Read: 'x' (Stack unchanged)
+  [PDA] Read: '=' (Stack unchanged)
+  [PDA] Read: '0' (Stack unchanged)
+  [PDA] Read: ';' (Stack unchanged)
+  [PDA] POP : '{' off stack (Matched with '}')
+  [PDA] Read: 'else' (Stack unchanged)
+  [PDA] PUSH: '{' onto stack
+  [PDA] Read: 'x' (Stack unchanged)
+  [PDA] Read: '=' (Stack unchanged)
+  [PDA] Read: '10' (Stack unchanged)
+  [PDA] Read: ';' (Stack unchanged)
+  [PDA] POP : '{' off stack (Matched with '}')
+
+Result: Syntax is VALID.
+
+3. CODE GENERATION (Three-Address Code):
+if (x >= 5) goto L1
+goto L2
+L1:
+x = 1
+goto L3
+L2:
+if (x > 10) goto L4
+goto L5
+L4:
+x = 0
+goto L6
+L5:
+x = 10
+L6:
+L3:
