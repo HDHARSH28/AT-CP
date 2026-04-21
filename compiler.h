@@ -16,6 +16,7 @@ using namespace std;
 struct Token {
     string type;
     string value;
+    int line;
 };
 
 // ========================================================================
@@ -36,6 +37,7 @@ extern bool hasError;
 extern stack<string> pdaStack; // Explicit Pushdown Automaton Stack
 extern int labelCounter;
 extern vector<string> intermediateCode; // To hold Three-Address Code output
+extern vector<string> errorMessages; // To store error logs for the final summary
 
 // Parsing functions
 Token peek();

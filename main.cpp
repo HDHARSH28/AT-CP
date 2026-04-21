@@ -44,13 +44,20 @@ int main() {
     currentPos = 0;
     hasError = false;
     intermediateCode.clear();
+    errorMessages.clear();
 
     if (tokens.size() > 0 && tokens[0].type != "EOF") {
         parseIfStatement();
     }
 
     if (hasError) {
-        cout << "\nResult: Syntax is INVALID." << endl;
+        cout << "\n======================================" << endl;
+        cout << "Result: Syntax is INVALID." << endl;
+        cout << "======================================" << endl;
+        for (string err : errorMessages) {
+            cout << "-> " << err << endl;
+        }
+        cout << "======================================\n" << endl;
     } else {
         cout << "\nResult: Syntax is VALID." << endl;
     }

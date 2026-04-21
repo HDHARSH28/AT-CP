@@ -6,15 +6,12 @@ bool hasError = false;
 stack<string> pdaStack;
 int labelCounter = 1;
 vector<string> intermediateCode;
-
-// ========================================================================
-// PHASE 2 & 3: SYNTAX ANALYSIS (PDA) & CODE GENERATION
-// Parses tokens using stack mirroring, and outputs Three-Address Code
-// ========================================================================
+vector<string> errorMessages;
 
 Token peek() {
     if (currentPos < tokens.size()) return tokens[currentPos];
-    return {"EOF", ""};
+    int lastLine = tokens.empty() ? 1 : tokens.back().line;
+    return {"EOF", "", lastLine};
 }
 
 void match(string expectedType, string expectedValue) {
@@ -41,12 +38,14 @@ void match(string expectedType, string expectedValue) {
 
         currentPos++;
     } else {
-        cout << "  [PDA] Syntax Error! Expected " << (expectedValue != "" ? expectedValue : expectedType) << endl;
+        string errorStr = "Error on Line " + to_string(t.line) + ": Expected " + (expectedValue != "" ? expectedValue : expectedType) + " but found '" + t.value + "'";
+        cout << "  [PDA] " << errorStr << endl;
+        errorMessages.push_back(errorStr);
         hasError = true;
     }
 }
 
-// Parse: "x > 5"
+// Parse: "x > 5" or "x > 5 && y < 10"
 string parseCondition() {
     string conditionStr = "";
     
@@ -64,7 +63,15 @@ string parseCondition() {
     else match("NUMBER", "");
     conditionStr += right.value;
 
-    return conditionStr; // returns something like "x > 5"
+    // Support logical operators (&&, ||)
+    if (peek().type == "LOGICAL") {
+        Token logOp = peek();
+        match("LOGICAL", "");
+        conditionStr += " " + logOp.value + " ";
+        conditionStr += parseCondition(); // Recursively parse the next condition
+    }
+
+    return conditionStr;
 }
 
 // Parse: "{ y = 10; }"

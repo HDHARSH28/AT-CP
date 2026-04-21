@@ -1,10 +1,10 @@
 --- SIMPLE COMPILER ---
-Source Code: if (x >= 5) {
-    x = 1;
-} else if(x>10) {
+Source Code: if (x >= 5 && y < 10) {
+    x = 10;
+}else if(x > 10 || y == 0) {
     x = 0;
-}else{
-    x=10;
+} else {
+    x = 10;
 }
 
 
@@ -31,6 +31,24 @@ Source Code: if (x >= 5) {
     => Final State! Accepted Token: [5]
 
   [DFA Trace]: 
+    State 0 --reads '&'--> State 6
+    State 6 --reads '&'--> State 7
+    => Final State! Accepted Token: [&&]
+
+  [DFA Trace]: 
+    State 0 --reads 'y'--> State 1
+    => Final State! Accepted Token: [y]
+
+  [DFA Trace]: 
+    State 0 --reads '<'--> State 3
+    => Final State! Accepted Token: [<]
+
+  [DFA Trace]: 
+    State 0 --reads '1'--> State 2
+    State 2 --reads '0'--> State 2
+    => Final State! Accepted Token: [10]
+
+  [DFA Trace]: 
     State 0 --reads ')'--> State 5
     => Final State! Accepted Token: [)]
 
@@ -48,7 +66,8 @@ Source Code: if (x >= 5) {
 
   [DFA Trace]: 
     State 0 --reads '1'--> State 2
-    => Final State! Accepted Token: [1]
+    State 2 --reads '0'--> State 2
+    => Final State! Accepted Token: [10]
 
   [DFA Trace]: 
     State 0 --reads ';'--> State 5
@@ -86,6 +105,24 @@ Source Code: if (x >= 5) {
     State 0 --reads '1'--> State 2
     State 2 --reads '0'--> State 2
     => Final State! Accepted Token: [10]
+
+  [DFA Trace]: 
+    State 0 --reads '|'--> State 6
+    State 6 --reads '|'--> State 7
+    => Final State! Accepted Token: [||]
+
+  [DFA Trace]: 
+    State 0 --reads 'y'--> State 1
+    => Final State! Accepted Token: [y]
+
+  [DFA Trace]: 
+    State 0 --reads '='--> State 3
+    State 3 --reads '='--> State 4
+    => Final State! Accepted Token: [==]
+
+  [DFA Trace]: 
+    State 0 --reads '0'--> State 2
+    => Final State! Accepted Token: [0]
 
   [DFA Trace]: 
     State 0 --reads ')'--> State 5
@@ -148,7 +185,7 @@ Source Code: if (x >= 5) {
     => Final State! Accepted Token: [}]
 
 1. LEXER Result (Tokens List):
-[KEYWORD : 'if'] [SYMBOL : '('] [ID : 'x'] [OPERATOR : '>='] [NUMBER : '5'] [SYMBOL : ')'] [SYMBOL : '{'] [ID : 'x'] [OPERATOR : '='] [NUMBER : '1'] [SYMBOL : ';'] [SYMBOL : '}'] [KEYWORD : 'else'] [KEYWORD : 'if'] [SYMBOL : '('] [ID : 'x'] [OPERATOR : '>'] [NUMBER : '10'] [SYMBOL : ')'] [SYMBOL : '{'] [ID : 'x'] [OPERATOR : '='] [NUMBER : '0'] [SYMBOL : ';'] [SYMBOL : '}'] [KEYWORD : 'else'] [SYMBOL : '{'] [ID : 'x'] [OPERATOR : '='] [NUMBER : '10'] [SYMBOL : ';'] [SYMBOL : '}'] 
+[KEYWORD : 'if'] [SYMBOL : '('] [ID : 'x'] [OPERATOR : '>='] [NUMBER : '5'] [LOGICAL : '&&'] [ID : 'y'] [OPERATOR : '<'] [NUMBER : '10'] [SYMBOL : ')'] [SYMBOL : '{'] [ID : 'x'] [OPERATOR : '='] [NUMBER : '10'] [SYMBOL : ';'] [SYMBOL : '}'] [KEYWORD : 'else'] [KEYWORD : 'if'] [SYMBOL : '('] [ID : 'x'] [OPERATOR : '>'] [NUMBER : '10'] [LOGICAL : '||'] [ID : 'y'] [OPERATOR : '=='] [NUMBER : '0'] [SYMBOL : ')'] [SYMBOL : '{'] [ID : 'x'] [OPERATOR : '='] [NUMBER : '0'] [SYMBOL : ';'] [SYMBOL : '}'] [KEYWORD : 'else'] [SYMBOL : '{'] [ID : 'x'] [OPERATOR : '='] [NUMBER : '10'] [SYMBOL : ';'] [SYMBOL : '}'] 
 
 2. PARSER Result (PDA tracing):
   [PDA] Read: 'if' (Stack unchanged)
@@ -156,11 +193,15 @@ Source Code: if (x >= 5) {
   [PDA] Read: 'x' (Stack unchanged)
   [PDA] Read: '>=' (Stack unchanged)
   [PDA] Read: '5' (Stack unchanged)
+  [PDA] Read: '&&' (Stack unchanged)
+  [PDA] Read: 'y' (Stack unchanged)
+  [PDA] Read: '<' (Stack unchanged)
+  [PDA] Read: '10' (Stack unchanged)
   [PDA] POP : '(' off stack (Matched with ')')
   [PDA] PUSH: '{' onto stack
   [PDA] Read: 'x' (Stack unchanged)
   [PDA] Read: '=' (Stack unchanged)
-  [PDA] Read: '1' (Stack unchanged)
+  [PDA] Read: '10' (Stack unchanged)
   [PDA] Read: ';' (Stack unchanged)
   [PDA] POP : '{' off stack (Matched with '}')
   [PDA] Read: 'else' (Stack unchanged)
@@ -169,6 +210,10 @@ Source Code: if (x >= 5) {
   [PDA] Read: 'x' (Stack unchanged)
   [PDA] Read: '>' (Stack unchanged)
   [PDA] Read: '10' (Stack unchanged)
+  [PDA] Read: '||' (Stack unchanged)
+  [PDA] Read: 'y' (Stack unchanged)
+  [PDA] Read: '==' (Stack unchanged)
+  [PDA] Read: '0' (Stack unchanged)
   [PDA] POP : '(' off stack (Matched with ')')
   [PDA] PUSH: '{' onto stack
   [PDA] Read: 'x' (Stack unchanged)
@@ -187,13 +232,13 @@ Source Code: if (x >= 5) {
 Result: Syntax is VALID.
 
 3. CODE GENERATION (Three-Address Code):
-if (x >= 5) goto L1
+if (x >= 5 && y < 10) goto L1
 goto L2
 L1:
-x = 1
+x = 10
 goto L3
 L2:
-if (x > 10) goto L4
+if (x > 10 || y == 0) goto L4
 goto L5
 L4:
 x = 0
