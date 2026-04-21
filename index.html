@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automata Visualizer - DFA & PDA</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts for Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar: Code Input & Controls -->
+        <aside class="sidebar glass-panel">
+            <h1>Automata Visualizer</h1>
+            <p>Write your C-like code below:</p>
+            <textarea id="codeInput" spellcheck="false">if (x >= 5 && y < 10) {
+    x = 1;
+} else if (x > 10 || y == 0) {
+    x = 0;
+} else {
+    x = 10;
+}</textarea>
+            
+            <div class="controls">
+                <button id="btnCompile" class="primary-btn">Compile & Parse</button>
+                <div class="playback">
+                    <button id="btnStep" class="secondary-btn" disabled>Step Forward</button>
+                    <button id="btnPlay" class="secondary-btn" disabled>Play Auto</button>
+                </div>
+            </div>
+
+            <div class="console">
+                <h3>Console Output</h3>
+                <div id="consoleOutput" class="console-box">System Ready...</div>
+            </div>
+        </aside>
+
+        <!-- Main Visualization Area -->
+        <main class="visualization-area">
+            
+            <!-- Top Half: DFA State Machine -->
+            <section class="dfa-section glass-panel">
+                <h2>Lexical Analysis (DFA)</h2>
+                <div class="current-token-display">Reading Character: <strong id="currentChar">...</strong></div>
+                <div id="dfaCanvas" class="canvas">
+                    <!-- DFA States will be injected here -->
+                    <div class="state" id="s0" style="top: 50%; left: 10%;">S0</div>
+                    <div class="state" id="s1" style="top: 15%; left: 40%;">S1<br><small>Word</small></div>
+                    <div class="state" id="s2" style="top: 35%; left: 40%;">S2<br><small>Num</small></div>
+                    <div class="state" id="s3" style="top: 55%; left: 40%;">S3<br><small>Op</small></div>
+                    <div class="state" id="s4" style="top: 55%; left: 70%;">S4<br><small>Op=</small></div>
+                    <div class="state" id="s5" style="top: 85%; left: 40%;">S5<br><small>Sym</small></div>
+                    <div class="state" id="s6" style="top: 70%; left: 40%;">S6<br><small>Log</small></div>
+                    <div class="state" id="s7" style="top: 70%; left: 70%;">S7<br><small>Log+</small></div>
+                    
+                    <div id="dfaToken" class="dfa-token hidden"></div>
+                </div>
+            </section>
+
+            <!-- Bottom Half: PDA Stack -->
+            <section class="pda-section glass-panel">
+                <h2>Syntax Analysis (PDA Stack)</h2>
+                <div class="pda-container">
+                    <div class="pda-log">
+                        <h3>PDA Actions</h3>
+                        <ul id="pdaActionList"></ul>
+                    </div>
+                    <div class="stack-wrapper">
+                        <h3>State Stack</h3>
+                        <div id="pdaStack" class="stack-box">
+                            <!-- Stack items injected here -->
+                            <div class="stack-base">BOTTOM</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="visualizer.js"></script>
+</body>
+</html>
