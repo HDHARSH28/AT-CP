@@ -1,60 +1,77 @@
 # Conditional and Branching Mini Compiler
 
-A pure C implementation of a mini-compiler that analyzes conditional and branching statements (`if`, `if-else`). It performs lexical analysis, syntax validation, and generates intermediate branching code (Three-Address Code).
+This project is a C++ mini compiler for conditional branching input. It performs:
 
-This project relies purely on standard C constructs and avoids complicated syntaxes or dependencies, making it very easy to explain and trace the exact automaton steps.
+1. Lexical analysis using DFA-style state tracing.
+2. Syntax analysis using PDA-style stack tracing.
+3. Intermediate code generation (Three-Address Code with labels and gotos).
 
-## Automata Theory Connections (Syllabus Mapping)
+## What It Can Parse
 
-1. **Unit 1 & 2 (FA & Regular Languages)**
-   - The Lexer is built as a pure **DFA (Deterministic Finite Automata) Simulator**.
-   - It traces character-by-character changes across states (e.g. `S0 -> S1 (word) -> ACCEPT`).
-2. **Unit 3 & 4 (CFG & Pushdown Automata)**
-   - The Parser uses a simulated explicit **PDA stack**.
-   - It logs the `PUSH` and `POP` states dynamically when checking the bounds of `()`, `{}`, and Grammar matches.
-   - Outputs the exact **CFG Leftmost Derivation steps** and an Abstract Syntax Tree (AST).
-3. **Unit 5 & 6 (Code Generation/Translation)**
-   - Intermediate TAC (Three Address Code) translates the AST into conditional `goto` jumps, simulating assembly control flow.
+Supported patterns:
 
-## Files Structure
+1. `if (condition) { ... }`
+2. `if ... else { ... }`
+3. `else if` chains
+4. Nested `if`
+5. Assignments inside blocks, such as `x = 5;` and `y = x + 1;`
+6. Conditions using operators: `> < >= <= == !=`
 
-Because the code is kept remarkably simple, it is highly modularized for readability:
+## What It Does Not Parse
 
-- **`compiler.h`** — The only header file. Contains constants, data structures (Token, ASTNode limits), and external global variable definitions.
-- **`lexer.c`** — Phase 1: DFA logic (`tokenize`).
-- **`parser.c`** — Phase 2: PDA and Syntax verification logic (`parseProgram`).
-- **`codegen.c`** — Phase 3: TAC conversion logic (`generateCode`).
-- **`printer.c`** — Formatted textual trace output utilities so they don't clog up algorithm logic.
-- **`main.c`** — The entry engine. It reads from files, triggers the 3 phases, and processes the final outputs.
-- **`build.bat`** — An easy script to automatically compile your compiler in Windows.
+Current limitations:
 
-## Supported Inputs
+1. Top-level statements that do not start with `if`
+2. Declarations like `int x = 10;`
+3. Logical operators like `&&` and `||`
+4. Loops (`for`, `while`), functions, arrays, strings
+5. Empty block `{ }` (treated as invalid by parser)
 
-The compiler understands variable declarations, assignments, logic and math operators inside branching logic.
+## Project Files
+
+1. `compiler.h` - Shared declarations for lexer/parser/codegen state
+2. `DFA.cpp` - Tokenization (lexer) and DFA trace output
+3. `PDA.cpp` - Parsing, PDA push/pop trace, and TAC generation
+4. `main.cpp` - Driver that reads `input.txt` and writes report to `output.txt`
+5. `run_tests.sh` - Linux test suite script
+6. `build.bat` - Windows build script
+
+## How to Run
+
+### Linux
+
+1. Compile:
+   ```bash
+   g++ -Wall -o compiler main.cpp DFA.cpp PDA.cpp
+   ```
+2. Put your source in `input.txt`.
+3. Run:
+   ```bash
+   ./compiler
+   ```
+4. Open `output.txt` for lexer, parser, and codegen output.
+
+### Windows
+
+1. Build:
+   ```bat
+   build.bat
+   ```
+2. Put your source in `input.txt`.
+3. Run:
+   ```bat
+   compiler.exe
+   ```
+4. Open `output.txt`.
+
+## Input Example
+
 ```c
-int x = 10;
-if (x > 5 && x != 10) {
-    x = x + 1;
-} else if (x == 5 || x < 0) {
-    x = 0;
+if (x > 5) {
+    y = x + 1;
+} else if (x == 5) {
+    y = 0;
 } else {
-    x = x - 1;
+    y = x - 1;
 }
 ```
-
-## How to Build and Run (Windows)
-
-1. Double-click **`build.bat`** (or run `.\build.bat` in a terminal) to compile everything effortlessly using `gcc`.
-2. Write your source code in **`input.txt`**.
-3. Run the executable:
-   ```bash
-   .\compiler.exe
-   ```
-4. Look at **`output.txt`**. It will contain a very rich trace:
-   - Your source code
-   - Lexical Analysis Result Table
-   - DFA State Transitions Trace
-   - PDA Stack Push/Pop Trace
-   - Leftmost Grammar Derivation
-   - Plotted Abstract Syntax Tree
-   - Three-Address Code output
