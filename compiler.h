@@ -8,40 +8,36 @@
 
 using namespace std;
 
-// ========================================================================
-// COMMON STRUCTURES
-// ========================================================================
-
-// We break the input text into "Tokens" (words/symbols)
 struct Token {
     string type;
     string value;
 };
 
-// ========================================================================
-// DFA (LEXICAL ANALYZER) 
-// ========================================================================
-// Global Token List
+// Global token stream produced by the lexer.
 extern vector<Token> tokens;
 
-// Function to convert raw code string into tokens
 void tokenize(string input);
 
-// ========================================================================
-// PDA (SYNTAX PARSER & CODE GENERATOR)
-// ========================================================================
-// Global parsing variables
+// Shared parser and code-generation state.
 extern int currentPos;
 extern bool hasError;
-extern stack<string> pdaStack; // Explicit Pushdown Automaton Stack
+extern stack<string> pdaStack;
 extern int labelCounter;
-extern vector<string> intermediateCode; // To hold Three-Address Code output
+extern vector<string> intermediateCode;
 
-// Parsing functions
+// Returns the current token without consuming it.
 Token peek();
+// Consumes one token and validates its type and optional value.
 void match(string expectedType, string expectedValue = "");
+// Parses an identifier/number and optional arithmetic tail.
+string parseExpression();
+// Parses a relational condition used by if statements.
 string parseCondition();
+// Parses one statement (assignment or nested if).
+void parseStatement();
+// Parses a non-empty statement block enclosed in braces.
 void parseBlock();
+// Parses if / else if / else and emits intermediate code labels.
 void parseIfStatement();
 
 #endif

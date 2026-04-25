@@ -1,130 +1,170 @@
 #include "compiler.h"
 
-// Define global parsing variables
 int currentPos = 0;
 bool hasError = false;
 stack<string> pdaStack;
 int labelCounter = 1;
 vector<string> intermediateCode;
 
-// ========================================================================
-// PHASE 2 & 3: SYNTAX ANALYSIS (PDA) & CODE GENERATION
-// Parses tokens using stack mirroring, and outputs Three-Address Code
-// ========================================================================
-
+// Safe token lookahead; returns EOF sentinel beyond stream end.
 Token peek() {
-    if (currentPos < tokens.size()) return tokens[currentPos];
+    if (currentPos < (int)tokens.size()) return tokens[currentPos];
     return {"EOF", ""};
 }
 
 void match(string expectedType, string expectedValue) {
     Token t = peek();
-    if (t.type == "EOF") return;
+    if (t.type == "EOF") {
+        if (expectedValue != "") {
+            cout << "  [PDA] Syntax Error! Unexpected end of input, expected '" << expectedValue << "'" << endl;
+            hasError = true;
+        }
+        return;
+    }
 
     if (t.type == expectedType && (expectedValue == "" || t.value == expectedValue)) {
-        
-        // Classic PDA: Only push opening brackets to the stack
         if (t.value == "{" || t.value == "(") {
             cout << "  [PDA] PUSH: '" << t.value << "' onto stack" << endl;
-            pdaStack.push(t.value); 
-        } 
-        // Classic PDA: Pop matching bracket when closing is found
-        else if (t.value == "}" || t.value == ")") {
+            pdaStack.push(t.value);
+        } else if (t.value == "}" || t.value == ")") {
             if (!pdaStack.empty()) {
-                cout << "  [PDA] POP : '" << pdaStack.top() << "' off stack (Matched with '" << t.value << "')" << endl;
+                cout << "  [PDA] POP : '" << pdaStack.top() << "' off stack (matched '" << t.value << "')" << endl;
                 pdaStack.pop();
+            } else {
+                cout << "  [PDA] Syntax Error! Closing '" << t.value << "' has no matching opener" << endl;
+                hasError = true;
             }
-        } 
-        else {
-            cout << "  [PDA] Read: '" << t.value << "' (Stack unchanged)" << endl;
+        } else {
+            cout << "  [PDA] Read: '" << t.value << "'" << endl;
         }
-
         currentPos++;
     } else {
-        cout << "  [PDA] Syntax Error! Expected " << (expectedValue != "" ? expectedValue : expectedType) << endl;
+        cout << "  [PDA] Syntax Error! Expected '"
+             << (expectedValue != "" ? expectedValue : expectedType)
+             << "' but got '" << t.value << "' (" << t.type << ")" << endl;
         hasError = true;
+        // Advance one token to avoid getting stuck on the same error.
+        currentPos++;
     }
 }
 
-// Parse: "x > 5"
+string parseExpression() {
+    Token t = peek();
+    if (t.type == "ID") {
+        match("ID", "");
+        Token next = peek();
+        if (next.type == "OPERATOR" &&
+            (next.value == "+" || next.value == "-" || next.value == "*" || next.value == "/")) {
+            string op = next.value;
+            match("OPERATOR", "");
+            Token right = peek();
+            string rval = right.value;
+            if (right.type == "ID")     match("ID", "");
+            else                        match("NUMBER", "");
+            return t.value + " " + op + " " + rval;
+        }
+        return t.value;
+    } else if (t.type == "NUMBER") {
+        match("NUMBER", "");
+        return t.value;
+    } else {
+        cout << "  [PDA] Syntax Error! Expected ID or NUMBER, got '" << t.value << "'" << endl;
+        hasError = true;
+        currentPos++;
+        return "?";
+    }
+}
+
 string parseCondition() {
-    string conditionStr = "";
-    
-    // Parse the condition e.g. "x > 5"
-    Token left = peek();
-    match("ID", "");
-    conditionStr += left.value + " ";
+    string left = parseExpression();
 
     Token op = peek();
+    if (op.type != "OPERATOR") {
+        cout << "  [PDA] Syntax Error! Expected operator in condition, got '" << op.value << "'" << endl;
+        hasError = true;
+        return left + " ? ?";
+    }
     match("OPERATOR", "");
-    conditionStr += op.value + " ";
 
-    Token right = peek();
-    if (right.type == "ID") match("ID", "");
-    else match("NUMBER", "");
-    conditionStr += right.value;
+    string right = parseExpression();
 
-    return conditionStr; // returns something like "x > 5"
+    return left + " " + op.value + " " + right;
 }
 
-// Parse: "{ y = 10; }"
+void parseStatement() {
+    Token t = peek();
+
+    if (t.type == "KEYWORD" && t.value == "if") {
+        parseIfStatement();
+        return;
+    }
+
+    if (t.type == "ID") {
+        Token var = peek();
+        match("ID", "");
+        string varName = var.value;
+
+        match("OPERATOR", "=");
+
+        string val = parseExpression();
+        match("SYMBOL", ";");
+
+        intermediateCode.push_back(varName + " = " + val);
+        return;
+    }
+
+    cout << "  [PDA] Syntax Error! Expected assignment or if, got '" << t.value << "'" << endl;
+    hasError = true;
+    currentPos++;
+}
+
 void parseBlock() {
     match("SYMBOL", "{");
-    
-    // Simple assignment inside block (e.g. y = 10;)
-    Token var = peek();
-    match("ID", "");
-    string varName = var.value;
 
-    match("OPERATOR", "=");
+    if (peek().value == "}") {
+        cout << "  [PDA] Syntax Error! Empty block — at least one statement required" << endl;
+        hasError = true;
+        match("SYMBOL", "}");
+        return;
+    }
 
-    Token val = peek();
-    if (val.type == "NUMBER") match("NUMBER", "");
-    else match("ID", "");
-    string valName = val.value;
+    while (peek().value != "}" && peek().type != "EOF") {
+        parseStatement();
+        if (hasError) break;
+    }
 
-    match("SYMBOL", ";");
-
-    match("SYMBOL", "}"); // Automatically triggers the PDA POP in match()
-
-    // Generate TAC code for assignment
-    intermediateCode.push_back(varName + " = " + valName);
+    match("SYMBOL", "}");
 }
 
-// Parse: "if (...) {...} else {...}"
 void parseIfStatement() {
     match("KEYWORD", "if");
-    
     match("SYMBOL", "(");
     string cond = parseCondition();
-    match("SYMBOL", ")"); // Automatically triggers the PDA POP in match()
+    match("SYMBOL", ")");
 
-    // Generate TAC Code for IF Condition
     string L1 = "L" + to_string(labelCounter++);
     string L2 = "L" + to_string(labelCounter++);
     intermediateCode.push_back("if (" + cond + ") goto " + L1);
     intermediateCode.push_back("goto " + L2);
     intermediateCode.push_back(L1 + ":");
 
-    parseBlock(); // Parse True block
+    parseBlock();
 
     if (peek().value == "else") {
         match("KEYWORD", "else");
-        
         string L3 = "L" + to_string(labelCounter++);
-        intermediateCode.push_back("goto " + L3); // Skip else block if true finished
-        intermediateCode.push_back(L2 + ":"); // Start of false block
-        
+        intermediateCode.push_back("goto " + L3);
+        intermediateCode.push_back(L2 + ":");
+
+        // Recursive call naturally handles else-if chains.
         if (peek().value == "if") {
-            // It's an "else if", recursively parse it
             parseIfStatement();
         } else {
-            // It's a normal "else" block
-            parseBlock(); // Parse False block
+            parseBlock();
         }
-        
-        intermediateCode.push_back(L3 + ":"); // End of entire if-else
+
+        intermediateCode.push_back(L3 + ":");
     } else {
-        intermediateCode.push_back(L2 + ":"); // End of if
+        intermediateCode.push_back(L2 + ":");
     }
 }

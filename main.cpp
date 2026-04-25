@@ -1,69 +1,80 @@
 #include "compiler.h"
 #include <fstream>
 
-int main() {
-    // Open output.txt and redirect cout (all console prints) to it
+int main()
+{
+    // Redirect all diagnostic and result output to output.txt.
     ofstream fout("output.txt");
-    streambuf *coutbuf = cout.rdbuf(); 
+    streambuf *coutbuf = cout.rdbuf();
     cout.rdbuf(fout.rdbuf());
 
     cout << "--- SIMPLE COMPILER ---" << endl;
 
-    // Open input.txt and read the source code
     ifstream fin("input.txt");
-    if (!fin) {
-        cout << "Error: Could not open input.txt" << endl;
-        // Restore cout to print error
+    if (!fin)
+    {
         cout.rdbuf(coutbuf);
         cout << "Error: Could not open input.txt" << endl;
         return 1;
     }
 
-    string code = "";
-    string line;
-    while (getline(fin, line)) {
+    string code = "", line;
+    while (getline(fin, line))
         code += line + "\n";
-    }
     fin.close();
-    
-    cout << "Source Code: " << code << "\n\n";
 
-    // 1. Lexical Analysis
+    cout << "Source Code:\n"
+         << code << "\n";
+
     tokenize(code);
-    
-    cout << "1. LEXER Result (Tokens List):" << endl;
-    for (Token t : tokens) {
-        cout << "[" << t.type << " : '" << t.value << "'] ";
-    }
+
+    cout << "1. LEXER Result (Token List):" << endl;
+    for (Token t : tokens)
+        cout << "[" << t.type << ":'" << t.value << "'] ";
     cout << "\n\n";
 
-    // 2. Syntax Analysis (PDA)
     cout << "2. PARSER Result (PDA tracing):" << endl;
-    
-    // Reset Globals in case of reruns (though main only runs once)
+
+    // Reset parser/codegen state before each compilation run.
     currentPos = 0;
     hasError = false;
     intermediateCode.clear();
-
-    if (tokens.size() > 0 && tokens[0].type != "EOF") {
-        parseIfStatement();
+    while (!pdaStack.empty())
+        pdaStack.pop();
+    if (tokens.empty())
+    {
+        cout << "  [PDA] Syntax Error! Empty input — nothing to parse" << endl;
+        hasError = true;
+    }
+    else
+    {
+        while (peek().type != "EOF")
+        {
+            if (peek().type == "KEYWORD" && peek().value == "if")
+            {
+                parseIfStatement();
+            }
+            else
+            {
+                cout << "  [PDA] Syntax Error! Top-level must start with 'if', got '"
+                     << peek().value << "'" << endl;
+                hasError = true;
+                break;
+            }
+        }
     }
 
-    if (hasError) {
+    if (hasError)
         cout << "\nResult: Syntax is INVALID." << endl;
-    } else {
+    else
         cout << "\nResult: Syntax is VALID." << endl;
-    }
 
-    // 3. Code Generation (TAC)
+    // Print generated three-address code even when syntax errors occur.
     cout << "\n3. CODE GENERATION (Three-Address Code):" << endl;
-    for (string tac_line : intermediateCode) {
-        cout << tac_line << endl;
-    }
+    for (string &l : intermediateCode)
+        cout << l << endl;
 
-    // Restore cout to console and print success message there
     cout.rdbuf(coutbuf);
-    cout << "Compilation successful! Output saved in output.txt." << endl;
-
+    cout << "Done! Check output.txt" << endl;
     return 0;
 }
