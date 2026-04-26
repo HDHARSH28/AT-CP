@@ -1,0 +1,11 @@
+# Build artifacts
+compiler
+main
+*.exe
+
+# Editor/OS files
+.vscode/
+*.log
+*.tmp
+*.swp
+*~
