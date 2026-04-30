@@ -20,9 +20,12 @@ void tokenize(string input) {
                 cout << "    State 0 --reads '" << input[i] << "'--> State 1" << endl;
                 word += input[i++];
             }
-            if      (word == "if")   tokens.push_back({"KEYWORD", word});
-            else if (word == "else") tokens.push_back({"KEYWORD", word});
-            else                     tokens.push_back({"ID", word});
+            if      (word == "if")    tokens.push_back({"KEYWORD", word});
+            else if (word == "else")  tokens.push_back({"KEYWORD", word});
+            else if (word == "while") tokens.push_back({"KEYWORD", word});
+            else if (word == "do")    tokens.push_back({"KEYWORD", word});
+            else if (word == "for")   tokens.push_back({"KEYWORD", word});
+            else                      tokens.push_back({"ID", word});
             cout << "    => Accepted Token: [" << word << "]\n" << endl;
             continue;
         }

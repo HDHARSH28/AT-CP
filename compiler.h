@@ -23,6 +23,7 @@ extern int currentPos;
 extern bool hasError;
 extern stack<string> pdaStack;
 extern int labelCounter;
+extern int loopDepth;
 extern vector<string> intermediateCode;
 
 // Returns the current token without consuming it.
@@ -33,11 +34,17 @@ void match(string expectedType, string expectedValue = "");
 string parseExpression();
 // Parses a relational condition used by if statements.
 string parseCondition();
-// Parses one statement (assignment or nested if).
+// Parses one statement (assignment, branch, or loop).
 void parseStatement();
 // Parses a non-empty statement block enclosed in braces.
 void parseBlock();
 // Parses if / else if / else and emits intermediate code labels.
 void parseIfStatement();
+// Parses while loops and emits labels/gotos.
+void parseWhileStatement();
+// Parses do-while loops and emits labels/gotos.
+void parseDoWhileStatement();
+// Parses simple for loops and emits labels/gotos.
+void parseForStatement();
 
 #endif

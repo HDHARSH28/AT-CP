@@ -1,6 +1,6 @@
-# Conditional and Branching Mini Compiler
+# Conditional, Branching, and Loop Mini Compiler
 
-This project is a C++ mini compiler for conditional branching input. It performs:
+This project is a C++ mini compiler for conditional branching and simple loop input. It performs:
 
 1. Lexical analysis using DFA-style state tracing.
 2. Syntax analysis using PDA-style stack tracing.
@@ -16,15 +16,19 @@ Supported patterns:
 4. Nested `if`
 5. Assignments inside blocks, such as `x = 5;` and `y = x + 1;`
 6. Conditions using operators: `> < >= <= == !=`
+7. Top-level assignments
+8. Non-nested `while (condition) { ... }`
+9. Non-nested `do { ... } while (condition);`
+10. Non-nested simple `for (init; condition; update) { ... }`, where `init` and `update` are assignments
 
 ## What It Does Not Parse
 
 Current limitations:
 
-1. Top-level statements that do not start with `if`
-2. Declarations like `int x = 10;`
-3. Logical operators like `&&` and `||`
-4. Loops (`for`, `while`), functions, arrays, strings
+1. Declarations like `int x = 10;`
+2. Logical operators like `&&` and `||`
+3. Nested loops
+4. Functions, arrays, strings
 5. Empty block `{ }` (treated as invalid by parser)
 
 ## Project Files
@@ -73,5 +77,17 @@ if (x > 5) {
     y = 0;
 } else {
     y = x - 1;
+}
+
+while (x < 10) {
+    x = x + 1;
+}
+
+do {
+    y = y + 1;
+} while (y < 5);
+
+for (i = 0; i < 3; i = i + 1) {
+    sum = sum + i;
 }
 ```

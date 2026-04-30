@@ -38,6 +38,8 @@ int main()
     // Reset parser/codegen state before each compilation run.
     currentPos = 0;
     hasError = false;
+    labelCounter = 1;
+    loopDepth = 0;
     intermediateCode.clear();
     while (!pdaStack.empty())
         pdaStack.pop();
@@ -50,13 +52,14 @@ int main()
     {
         while (peek().type != "EOF")
         {
-            if (peek().type == "KEYWORD" && peek().value == "if")
+            if (peek().type == "KEYWORD" ||
+                peek().type == "ID")
             {
-                parseIfStatement();
+                parseStatement();
             }
             else
             {
-                cout << "  [PDA] Syntax Error! Top-level must start with 'if', got '"
+                cout << "  [PDA] Syntax Error! Top-level must start with a statement, got '"
                      << peek().value << "'" << endl;
                 hasError = true;
                 break;

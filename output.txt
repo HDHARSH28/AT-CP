@@ -1,12 +1,85 @@
-Done! Check output.txt
-
+--- SIMPLE COMPILER ---
 Source Code:
-if (x > 40 { y = 40; }
+for (i = 0; i < 20; i = i + 1) { while (x < 20) { x = x + 1; } }
+
+  [DFA Trace]:
+    State 0 --reads 'f'--> State 1
+    State 0 --reads 'o'--> State 1
+    State 0 --reads 'r'--> State 1
+    => Accepted Token: [for]
+
+  [DFA Trace]:
+    State 0 --reads '('--> State 5
+    => Accepted Token: [(]
 
   [DFA Trace]:
     State 0 --reads 'i'--> State 1
-    State 0 --reads 'f'--> State 1
-    => Accepted Token: [if]
+    => Accepted Token: [i]
+
+  [DFA Trace]:
+    State 0 --reads '='--> State 3
+    => Accepted Token: [=]
+
+  [DFA Trace]:
+    State 0 --reads '0'--> State 2
+    => Accepted Token: [0]
+
+  [DFA Trace]:
+    State 0 --reads ';'--> State 5
+    => Accepted Token: [;]
+
+  [DFA Trace]:
+    State 0 --reads 'i'--> State 1
+    => Accepted Token: [i]
+
+  [DFA Trace]:
+    State 0 --reads '<'--> State 3
+    => Accepted Token: [<]
+
+  [DFA Trace]:
+    State 0 --reads '2'--> State 2
+    State 0 --reads '0'--> State 2
+    => Accepted Token: [20]
+
+  [DFA Trace]:
+    State 0 --reads ';'--> State 5
+    => Accepted Token: [;]
+
+  [DFA Trace]:
+    State 0 --reads 'i'--> State 1
+    => Accepted Token: [i]
+
+  [DFA Trace]:
+    State 0 --reads '='--> State 3
+    => Accepted Token: [=]
+
+  [DFA Trace]:
+    State 0 --reads 'i'--> State 1
+    => Accepted Token: [i]
+
+  [DFA Trace]:
+    State 0 --reads '+'--> State 3
+    => Accepted Token: [+]
+
+  [DFA Trace]:
+    State 0 --reads '1'--> State 2
+    => Accepted Token: [1]
+
+  [DFA Trace]:
+    State 0 --reads ')'--> State 5
+    => Accepted Token: [)]
+
+  [DFA Trace]:
+    State 0 --reads '{'--> State 5
+    => Accepted Token: [{]
+
+  [DFA Trace]:
+    State 0 --reads 'w'--> State 1
+    State 0 --reads 'h'--> State 1
+    State 0 --reads 'i'--> State 1
+    State 0 --reads 'l'--> State 1
+    State 0 --reads 'e'--> State 1
+    => Accepted Token: [while]
 
   [DFA Trace]:
     State 0 --reads '('--> State 5
@@ -17,30 +90,41 @@ if (x > 40 { y = 40; }
     => Accepted Token: [x]
 
   [DFA Trace]:
-    State 0 --reads '>'--> State 3
-    => Accepted Token: [>]
+    State 0 --reads '<'--> State 3
+    => Accepted Token: [<]
 
   [DFA Trace]:
-    State 0 --reads '4'--> State 2
+    State 0 --reads '2'--> State 2
     State 0 --reads '0'--> State 2
-    => Accepted Token: [40]
+    => Accepted Token: [20]
+
+  [DFA Trace]:
+    State 0 --reads ')'--> State 5
+    => Accepted Token: [)]
 
   [DFA Trace]:
     State 0 --reads '{'--> State 5
     => Accepted Token: [{]
 
   [DFA Trace]:
-    State 0 --reads 'y'--> State 1
-    => Accepted Token: [y]
+    State 0 --reads 'x'--> State 1
+    => Accepted Token: [x]
 
   [DFA Trace]:
     State 0 --reads '='--> State 3
     => Accepted Token: [=]
 
   [DFA Trace]:
-    State 0 --reads '4'--> State 2
-    State 0 --reads '0'--> State 2
-    => Accepted Token: [40]
+    State 0 --reads 'x'--> State 1
+    => Accepted Token: [x]
+
+  [DFA Trace]:
+    State 0 --reads '+'--> State 3
+    => Accepted Token: [+]
+
+  [DFA Trace]:
+    State 0 --reads '1'--> State 2
+    => Accepted Token: [1]
 
   [DFA Trace]:
     State 0 --reads ';'--> State 5
@@ -50,25 +134,43 @@ if (x > 40 { y = 40; }
     State 0 --reads '}'--> State 5
     => Accepted Token: [}]
 
+  [DFA Trace]:
+    State 0 --reads '}'--> State 5
+    => Accepted Token: [}]
+
 1. LEXER Result (Token List):
-[KEYWORD:'if'] [SYMBOL:'('] [ID:'x'] [OPERATOR:'>'] [NUMBER:'40'] [SYMBOL:'{'] [ID:'y'] [OPERATOR:'='] [NUMBER:'40'] [SYMBOL:';'] [SYMBOL:'}'] 
+[KEYWORD:'for'] [SYMBOL:'('] [ID:'i'] [OPERATOR:'='] [NUMBER:'0'] [SYMBOL:';'] [ID:'i'] [OPERATOR:'<'] [NUMBER:'20'] [SYMBOL:';'] [ID:'i'] [OPERATOR:'='] [ID:'i'] [OPERATOR:'+'] [NUMBER:'1'] [SYMBOL:')'] [SYMBOL:'{'] [KEYWORD:'while'] [SYMBOL:'('] [ID:'x'] [OPERATOR:'<'] [NUMBER:'20'] [SYMBOL:')'] [SYMBOL:'{'] [ID:'x'] [OPERATOR:'='] [ID:'x'] [OPERATOR:'+'] [NUMBER:'1'] [SYMBOL:';'] [SYMBOL:'}'] [SYMBOL:'}'] 
 
 2. PARSER Result (PDA tracing):
-  [PDA] Read: 'if'
+  [PDA] Read: 'for'
   [PDA] PUSH: '(' onto stack
-  [PDA] Read: 'x'
-  [PDA] Read: '>'
-  [PDA] Read: '40'
-  [PDA] Syntax Error! Expected ')' but got '{' (SYMBOL)
-  [PDA] Syntax Error! Expected '{' but got 'y' (ID)
-  [PDA] Syntax Error! Expected assignment or if, got '='
-  [PDA] Syntax Error! Expected '}' but got '40' (NUMBER)
-  [PDA] Syntax Error! Top-level must start with 'if', got ';'
+  [PDA] Read: 'i'
+  [PDA] Read: '='
+  [PDA] Read: '0'
+  [PDA] Read: ';'
+  [PDA] Read: 'i'
+  [PDA] Read: '<'
+  [PDA] Read: '20'
+  [PDA] Read: ';'
+  [PDA] Read: 'i'
+  [PDA] Read: '='
+  [PDA] Read: 'i'
+  [PDA] Read: '+'
+  [PDA] Read: '1'
+  [PDA] POP : '(' off stack (matched ')')
+  [PDA] PUSH: '{' onto stack
+  [PDA] Syntax Error! Nested loops are not supported
+  [PDA] Syntax Error! Expected '}' but got 'while' (KEYWORD)
+  [PDA] Syntax Error! Top-level must start with a statement, got '('
 
 Result: Syntax is INVALID.
 
 3. CODE GENERATION (Three-Address Code):
-if (x > 40) goto L1
-goto L2
+i = 0
 L1:
+if (i < 20) goto L2
+goto L3
 L2:
+i = i + 1
+goto L1
+L3:
