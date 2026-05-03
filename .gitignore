@@ -1,11 +1,27 @@
 # Build artifacts
 compiler
+compiler.exe
 main
-*.exe
+*.o
+*.a
+*.so
+*.dylib
 
-# Editor/OS files
+# IDE files
 .vscode/
+.idea/
 *.log
 *.tmp
 *.swp
 *~
+
+# Codex cache
+.codex
+
+# Test/Output files
+output.txt
+/out/
+
+# OS files
+.DS_Store
+Thumbs.db
